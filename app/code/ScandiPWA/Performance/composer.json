@@ -1,0 +1,31 @@
+{
+    "name": "scandipwa/performance",
+    "description": "N/A",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0"
+    ],
+    "require": {
+        "magento/framework": "*",
+        "magento/module-catalog": "*",
+        "magento/module-swatches": "*",
+        "magento/module-store": "*",
+        "magento/module-inventory-api": "*",
+        "magento/module-eav": "*",
+        "magento/module-inventory-catalog": "*",
+        "magento/module-catalog-inventory": "*",
+        "magento/module-catalog-graph-ql": "^100.3"
+    }
+    ,
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
+    },
+    "autoload": {
+        "files": [
+            "src/registration.php"
+        ],
+        "psr-4": {
+            "ScandiPWA\\Performance\\": "./"
+        }
+    }
+}

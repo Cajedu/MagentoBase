@@ -1,0 +1,97 @@
+##
+# ScandiPWA_CatalogGraphQl
+#
+# @category    ScandiPWA
+# @package     ScandiPWA_CatalogGraphQl
+# @author      Viktors Pliska <info@scandiweb.com>
+# @author      Valerijs Sceglovs <info@scandiweb.com>
+# @author      Raivis Dejus <info@scandiweb.com>
+# @copyright   Copyright (c) 2018 Scandiweb, Ltd (https://scandiweb.com)
+##
+
+type MediaGalleryImageOfType @doc(description: "Products thumbnail image") {
+    type: String @doc(description: "Product image type")
+    url: String @doc(description: "Product image url")
+}
+
+input ProductAttributeFilterInput {
+    category_url_key: FilterTypeInput @doc(description: "Category url_key the product belongs to")
+    category_url_path: FilterTypeInput @doc(description: "Category url_path the product belongs to")
+    conditions: FilterTypeInput @doc(description: "Searches products by JSON formatted conditions")
+    customer_group_id: FilterTypeInput @doc(description: "Modifies product prices based on customer group")
+    news_from_date: FilterTypeInput @doc(description: "The beginning date for new product listings, and determines if the product is featured as a new product.")
+    news_to_date: FilterTypeInput @doc(description: "The end date for new product listings.")
+}
+
+extend type MediaGalleryEntry  @doc(description: "MediaGalleryEntry defines characteristics about images and videos associated with a specific product") {
+    thumbnail: MediaGalleryImageOfType @doc(description: "The path of the thumbnail image on the server thumbnail")
+    base: MediaGalleryImageOfType @doc(description: "The path of the thumbnail image on the server thumbnail")
+}
+
+type ProductImage @doc(description: "Extend product Image fields for frontend-driven loading mechanism") {
+    path: String @doc(description: "Relative path to origin image") @resolver(class:"ScandiPWA\\CatalogGraphQl\\Model\\Resolver\\Product\\ProductImage\\Path")
+}
+
+extend type Query {
+    category (
+        id: Int @doc(description: "Ids of the category")
+        url_path: String @doc(description: "Url path of the category")
+    ): CategoryTree
+    @resolver(class: "ScandiPWA\\CatalogGraphQl\\Model\\Resolver\\CategoryTree")
+}
+
+type CategoryTree {
+    is_active: Boolean @doc(description: "Category is enabled")
+}
+
+extend interface ProductInterface {
+    qty: Float @doc(description: "Qty field for checkout order view")
+    stock_item: ProductStockItem @resolver(class: "ScandiPWA\\CatalogGraphQl\\Model\\Resolver\\Inventory\\StockCount")
+    url: String @resolver(class: "ScandiPWA\\CatalogGraphQl\\Model\\Resolver\\Product\\Url")
+    attributes: [AttributeWithValue] @resolver(class: "ScandiPWA\\CatalogGraphQl\\Model\\Resolver\\AttributesWithValue")
+}
+
+interface CategoryInterface {
+    url: String  @resolver(class: "ScandiPWA\\CatalogGraphQl\\Model\\Resolver\\Category\\Url")
+}
+
+type AttributeWithValue {
+    attribute_code: String
+    entity_type: String
+    attribute_type: String
+    attribute_value: String
+    attribute_label: String
+    attribute_id: Int
+    attribute_options: [AttributeWithValueOption]
+}
+
+type AttributeWithValueOption {
+    label: String
+    value: String
+    swatch_data: AttributeWithValueSwatchData
+}
+
+type AttributeWithValueSwatchData {
+    type: String
+    value: String
+}
+
+extend type Products {
+    min_price: Float @doc(description: "Minimal price among all selected items")
+    max_price: Float @doc(description: "Maximal price among all selected items")
+}
+
+type ProductStockItem {
+    qty: Float @doc(description: "Product quantity available in stock")
+    min_sale_qty: Int @doc(description: "Minimal amount of item that can be bought")
+    max_sale_qty: Int @doc(description: "Maximal amount of item that can be bought")
+}
+
+type Breadcrumb {
+    category_url: String @doc(description: "Trimmed URL rewrite")
+    category_is_active: Boolean @doc(description: "Is category active")
+}
+
+interface AggregationOptionInterface {
+    swatch_data: SwatchData @doc(description: "Swatch data") @resolver(class: "ScandiPWA\\CatalogGraphQl\\Model\\Resolver\\Aggregations\\SwatchData")
+}

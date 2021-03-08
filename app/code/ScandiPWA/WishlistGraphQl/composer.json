@@ -1,0 +1,31 @@
+{
+    "name": "scandipwa/wishlist-graphql",
+    "description": "N/A",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0"
+    ],
+    "require": {
+        "magento/framework": "*",
+        "magento/module-configurable-product": "*",
+        "magento/module-customer": "*",
+        "magento/module-catalog": "*",
+        "magento/module-store": "*",
+        "magento/module-catalog-graph-ql": "*",
+        "magento/module-wishlist": "*",
+        "magento/module-wishlist-graph-ql": "^100.3",
+        "scandipwa/performance": "^1.0"
+    }
+    ,
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
+    },
+    "autoload": {
+        "files": [
+            "src/registration.php"
+        ],
+        "psr-4": {
+            "ScandiPWA\\WishlistGraphQl\\": "./"
+        }
+    }
+}
