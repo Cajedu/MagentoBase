@@ -26,6 +26,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Mageplaza\SocialLogin\Helper\Data as HelperData;
 use Mageplaza\SocialLogin\Model\Providers\Amazon;
+use Mageplaza\SocialLogin\Model\Providers\FaceBookApi;
 use Mageplaza\SocialLogin\Model\Providers\GitHub;
 use Mageplaza\SocialLogin\Model\Providers\Instagram;
 use Mageplaza\SocialLogin\Model\Providers\Vkontakte;
@@ -38,9 +39,14 @@ use Mageplaza\SocialLogin\Model\Providers\Vkontakte;
 class Social extends HelperData
 {
     /**
-     * @type
+     * @var mixed
      */
     protected $_type;
+
+    /**
+    * @var mixed
+    */
+    protected $_config='web';
 
     /**
      * @param null $type
@@ -57,6 +63,15 @@ class Social extends HelperData
         $this->_type = $type;
 
         return $listTypes[$type];
+    }
+    /**
+     * @param null $config
+     *
+     * @return null
+     */
+    public function setConfig($config)
+    {
+        $this->_config=$config;
     }
 
     /**
@@ -88,15 +103,22 @@ class Social extends HelperData
      */
     public function getSocialConfig($type)
     {
+        if ($this->_config == 'web') {
+            $faceBookConfig=['trustForwarded' => false, 'scope' => 'email, public_profile'];
+        } else {
+            $faceBookConfig=['wrapper' => ['class' => FaceBookApi::class],'trustForwarded' => false, 'scope' => 'email, public_profile'];
+        }
+
         $apiData = [
-            'Facebook'  => ['trustForwarded' => false, 'scope' => 'email, public_profile'],
+            'Facebook'  => $faceBookConfig,
             'Twitter'   => ['includeEmail' => true],
             'LinkedIn'  => ['fields' => ['id', 'first-name', 'last-name', 'email-address']],
             'Vkontakte' => ['wrapper' => ['class' => Vkontakte::class]],
             'Instagram' => ['wrapper' => ['class' => Instagram::class]],
             'Github'    => ['wrapper' => ['class' => GitHub::class]],
             'Amazon'    => ['wrapper' => ['class' => Amazon::class]],
-            'Google'    => ['scope' => 'profile email']
+            'Google'    => ['scope' => 'profile email'],
+            'Yahoo'     => ['scope' => 'profile']
         ];
 
         if ($type && array_key_exists($type, $apiData)) {

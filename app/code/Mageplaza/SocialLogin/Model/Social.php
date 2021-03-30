@@ -311,7 +311,9 @@ class Social extends AbstractModel
 
         try {
             $adapter     = $auth->authenticate($apiName);
-            $userProfile = $adapter->getUserProfile();
+            if ($adapter != null) {
+                $userProfile = $adapter->getUserProfile();
+            }
         } catch (Exception $e) {
             $auth->logoutAllProviders();
             $auth        = new Hybrid_Auth($config);

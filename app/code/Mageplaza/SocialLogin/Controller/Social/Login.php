@@ -18,6 +18,7 @@
  * @copyright Copyright (c) Mageplaza (https://www.mageplaza.com/)
  * @license   https://www.mageplaza.com/LICENSE.txt
  */
+
 namespace Mageplaza\SocialLogin\Controller\Social;
 
 use Exception;
@@ -43,33 +44,42 @@ class Login extends AbstractSocial
      */
     public function execute()
     {
+        
+        
         if ($this->checkCustomerLogin() && $this->session->isLoggedIn()) {
             $this->_redirect('customer/account');
 
             return;
         }
+
         $type = $this->apiHelper->setType($this->getRequest()->getParam('type'));
+        
+        
         if (!$type) {
             $this->_forward('noroute');
 
             return;
         }
-
         try {
             $userProfile = $this->apiObject->getUserProfile($type);
 
             if (!$userProfile->identifier) {
                 return $this->emailRedirect($type);
             }
-        } catch (Exception $e) {
+        } 
+        catch (Exception $e) {
             $this->setBodyResponse($e->getMessage());
 
             return;
         }
-        $customer = $this->apiObject->getCustomerBySocial($userProfile->identifier, $type);
+
+        $customer     = $this->apiObject->getCustomerBySocial($userProfile->identifier, $type);
+        $customerData = $this->customerModel->load($customer->getId());
+        
 
         if (!$customer->getId()) {
-            $requiredMoreInfo = (int) $this->apiHelper->requiredMoreInfo();
+            $requiredMoreInfo = (int)$this->apiHelper->requiredMoreInfo();
+
             if ((!$userProfile->email && $requiredMoreInfo === 2) || $requiredMoreInfo === 1) {
                 $this->session->setUserProfile($userProfile);
 
@@ -82,7 +92,36 @@ class Login extends AbstractSocial
                     )
                 );
             }
+
             $customer = $this->createCustomerProcess($userProfile, $type);
+        } elseif ($this->apiHelper->isCheckMode()) {
+            if ($customerData->getData('password_hash') === null) {
+                
+                $userProfile->hash = '';
+                $this->session->setUserProfile($userProfile);
+
+                return $this->_appendJs(
+                    sprintf(
+                        "<script>window.close();window.opener.fakeEmailCallback('%s','%s','%s');</script>",
+                        $type,
+                        $userProfile->firstName,
+                        $userProfile->lastName
+                    )
+                );
+            }
+            
+
+            $userProfile->hash = $customerData->getData('password_hash');
+            $this->session->setUserProfile($userProfile);
+
+            return $this->_appendJs(
+                sprintf(
+                    "<script>window.close();window.opener.fakeEmailCallback('%s','%s','%s');</script>",
+                    $type,
+                    $userProfile->firstName,
+                    $userProfile->lastName
+                )
+            );
         }
         $this->refresh($customer);
 

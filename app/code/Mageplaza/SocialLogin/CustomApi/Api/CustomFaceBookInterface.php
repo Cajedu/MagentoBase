@@ -19,20 +19,15 @@
  * @license   https://www.mageplaza.com/LICENSE.txt
  */
 
-namespace Mageplaza\SocialLogin\Block\Form;
+namespace Mageplaza\SocialLogin\CustomApi\Api;
 
-/**
- * Class Register
- *
- * @package Mageplaza\SocialLogin\Block\Form
- */
-class Register extends \Magento\Customer\Block\Form\Register
+interface CustomFaceBookInterface
 {
     /**
-     * @return $this
+     * GET for Login api
+     * @param string $accessToken
+     * @return string
      */
-    protected function _prepareLayout()
-    {
-        return $this;
-    }
+
+    public function login($accessToken);
 }

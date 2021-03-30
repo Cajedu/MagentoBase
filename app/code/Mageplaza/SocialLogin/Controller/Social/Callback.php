@@ -35,8 +35,9 @@ class Callback extends AbstractSocial
      */
     public function execute()
     {
+       
         $param = $this->getRequest()->getParams();
-
+        
         if (isset($param['live.php'])) {
             $request = array_merge($param, ['hauth_done' => 'Live']);
         }
@@ -47,11 +48,14 @@ class Callback extends AbstractSocial
                     && $this->checkRequest('hauth_done', 'Facebook'))
                 || ($this->checkRequest('hauth_done', 'Twitter') && $this->checkRequest('denied')))
         ) {
-            return $this->_appendJs(sprintf('<script>window.close();</script>'));
+          return $this->_appendJs(sprintf('<script>window.close();</script>'));  
+            
         }
         if (isset($request)) {
+          var_dump('eeerrrrfff');die();  
             Hybrid_Endpoint::process($request);
         }
+       
 
         Hybrid_Endpoint::process();
     }
