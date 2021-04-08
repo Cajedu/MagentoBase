@@ -21,6 +21,8 @@
 
 namespace Mageplaza\SocialLogin\CustomApi\Api;
 
+
+
 interface CustomFaceBookInterface
 {
     /**
@@ -28,6 +30,6 @@ interface CustomFaceBookInterface
      * @param string $accessToken
      * @return string
      */
-
+ 
     public function login($accessToken);
 }

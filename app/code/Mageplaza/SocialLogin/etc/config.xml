@@ -81,6 +81,9 @@
             <live>
                 <sort_order>110</sort_order>
             </live>
+            <apple>
+                <sort_order>120</sort_order>
+            </apple>
         </sociallogin>
     </default>
 </config>

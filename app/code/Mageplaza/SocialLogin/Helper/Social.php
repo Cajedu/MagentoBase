@@ -26,11 +26,11 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Mageplaza\SocialLogin\Helper\Data as HelperData;
 use Mageplaza\SocialLogin\Model\Providers\Amazon;
-use Mageplaza\SocialLogin\Model\Providers\FaceBookApi;
 use Mageplaza\SocialLogin\Model\Providers\GitHub;
 use Mageplaza\SocialLogin\Model\Providers\Instagram;
 use Mageplaza\SocialLogin\Model\Providers\Vkontakte;
-
+use Mageplaza\SocialLogin\Model\Providers\FaceBookApi;
+use Mageplaza\SocialLogin\Model\Providers\Apple;
 /**
  * Class Social
  *
@@ -42,10 +42,10 @@ class Social extends HelperData
      * @var mixed
      */
     protected $_type;
-
-    /**
-    * @var mixed
-    */
+    
+     /**
+     * @var mixed
+     */
     protected $_config='web';
 
     /**
@@ -73,6 +73,9 @@ class Social extends HelperData
     {
         $this->_config=$config;
     }
+    
+    
+    
 
     /**
      * @return array
@@ -103,12 +106,15 @@ class Social extends HelperData
      */
     public function getSocialConfig($type)
     {
-        if ($this->_config == 'web') {
-            $faceBookConfig=['trustForwarded' => false, 'scope' => 'email, public_profile'];
-        } else {
-            $faceBookConfig=['wrapper' => ['class' => FaceBookApi::class],'trustForwarded' => false, 'scope' => 'email, public_profile'];
+        if($this->_config == 'web')
+        {
+          $faceBookConfig=['trustForwarded' => false, 'scope' => 'email, public_profile'];
         }
-
+        else
+        {
+           $faceBookConfig=['wrapper' => ['class' => FaceBookApi::class],'trustForwarded' => false, 'scope' => 'email, public_profile']; 
+        }
+        
         $apiData = [
             'Facebook'  => $faceBookConfig,
             'Twitter'   => ['includeEmail' => true],
@@ -117,6 +123,7 @@ class Social extends HelperData
             'Instagram' => ['wrapper' => ['class' => Instagram::class]],
             'Github'    => ['wrapper' => ['class' => GitHub::class]],
             'Amazon'    => ['wrapper' => ['class' => Amazon::class]],
+            'Apple'    => ['wrapper' => ['class' => Apple::class]],
             'Google'    => ['scope' => 'profile email'],
             'Yahoo'     => ['scope' => 'profile']
         ];
@@ -266,7 +273,8 @@ class Social extends HelperData
             'vkontakte'  => 'Vkontakte',
             'instagram'  => 'Instagram',
             'github'     => 'Github',
-            'live'       => 'Live'
+            'live'       => 'Live',
+            'apple'      => 'Apple'
         ];
     }
 }

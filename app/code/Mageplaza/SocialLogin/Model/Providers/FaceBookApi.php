@@ -7,14 +7,15 @@
 
 namespace Mageplaza\SocialLogin\Model\Providers;
 
-use Facebook\Authentication\AccessToken;
+
 use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook as FacebookSDK;
-use Hybrid_Auth;
+use Hybrid_Provider_Model;
+use Facebook\Authentication\AccessToken;
 use Hybrid_Exception;
 use Hybrid_Logger;
-use Hybrid_Provider_Model;
-
+use Hybrid_Auth;
+use Hybrid_Endpoint;
 /* !
  * HybridAuth
  * http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
@@ -26,8 +27,7 @@ use Hybrid_Provider_Model;
  * Hybrid_Providers_Facebook use the Facebook PHP SDK created by Facebook
  * http://hybridauth.sourceforge.net/userguide/IDProvider_info_Facebook.html
  */
-class FaceBookApi extends Hybrid_Provider_Model
-{
+class FaceBookApi extends Hybrid_Provider_Model {
 
     /**
      * Default permissions, and a lot of them. You can change them from the configuration by setting the scope to what you want/need.
@@ -36,7 +36,7 @@ class FaceBookApi extends Hybrid_Provider_Model
      * @link https://developers.facebook.com/docs/facebook-login/permissions
      * @var array $scope
      */
-    public $scope = ['email', 'public_profile'];
+    public $scope = array('email', 'public_profile');
 
     /**
      * Provider API client
@@ -51,8 +51,7 @@ class FaceBookApi extends Hybrid_Provider_Model
     /**
      * {@inheritdoc}
      */
-    public function initialize()
-    {
+    function initialize() {
         if (!$this->config["keys"]["id"] || !$this->config["keys"]["secret"]) {
             throw new Exception("Your application id and secret are required in order to connect to {$this->providerId}.", 4);
         }
@@ -78,112 +77,119 @@ class FaceBookApi extends Hybrid_Provider_Model
             'trustForwarded' => $trustForwarded,
         ]);
     }
+    
+    function login() {
+        
+       
+    Hybrid_Logger::info("Enter Hybrid_Provider_Model::login( {$this->providerId} )");
 
-    public function login()
-    {
-        Hybrid_Logger::info("Enter Hybrid_Provider_Model::login( {$this->providerId} )");
-
-        // Clear all unneeded params.
-        foreach (Hybrid_Auth::$config["providers"] as $idpid => $params) {
-            Hybrid_Auth::storage()->delete("hauth_session.{$idpid}.hauth_return_to");
-            Hybrid_Auth::storage()->delete("hauth_session.{$idpid}.hauth_endpoint");
-            Hybrid_Auth::storage()->delete("hauth_session.{$idpid}.id_provider_params");
-        }
-
-        // Make a fresh start.
-        $this->logout();
-
-        // Get hybridauth base url.
-        if (empty(Hybrid_Auth::$config["base_url"])) {
-            // The base url wasn't provide, so we must use the current
-            // url (which makes sense actually)
-            $url = empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' ? 'http' : 'https';
-            $url .= '://' . $_SERVER['HTTP_HOST'];
-            $url .= $_SERVER['REQUEST_URI'];
-            $base_url = $url;
-        } else {
-            $base_url = Hybrid_Auth::$config["base_url"];
-        }
-
-        // Make sure params is array.
-        if (!is_array($this->params)) {
-            $this->params = [];
-        }
-
-        // We make use of session_id() as storage hash to identify the current user
-        // using session_regenerate_id() will be a problem, but ..
-        $this->params["hauth_token"] = session_id();
-
-        // Set request timestamp.
-        $this->params["hauth_time"] = time();
-
-        // For default HybridAuth endpoint url hauth_login_start_url
-        // auth.start  required  the IDp ID
-        // auth.time   optional  login request timestamp.
-        if (!isset($this->params["login_start"])) {
-            $this->params["login_start"] = $base_url . (strpos($base_url, '?') ? '&' : '?') . "hauth.start={$this->providerId}&hauth.time={$this->params["hauth_time"]}";
-        }
-
-        // For default HybridAuth endpoint url hauth_login_done_url
-        // auth.done required the IDp ID.
-        if (!isset($this->params["login_done"])) {
-            $this->params["login_done"] = $base_url . (strpos($base_url, '?') ? '&' : '?') . "hauth.done={$this->providerId}";
-        }
-
-        // Workaround to solve windows live authentication
-        // since microsoft disallowed redirect urls to contain any parameters
-        // http://mywebsite.com/path_to_hybridauth/?hauth.done=Live will not work.
-        if ($this->providerId === "Live") {
-            $this->params["login_done"] = $base_url . "live.php";
-        }
-
-        // Workaround to fix broken callback urls for the Facebook OAuth client.
-        if ($this->useSafeUrls) {
-            $this->params['login_done'] = str_replace('hauth.done', 'hauth_done', $this->params['login_done']);
-        }
-
-        if (isset($this->params["hauth_return_to"])) {
-            Hybrid_Auth::storage()->set("hauth_session.{$this->providerId}.hauth_return_to", $this->params["hauth_return_to"]);
-        }
-        if (isset($this->params["login_done"])) {
-            Hybrid_Auth::storage()->set("hauth_session.{$this->providerId}.hauth_endpoint", $this->params["login_done"]);
-        }
-        Hybrid_Auth::storage()->set("hauth_session.{$this->providerId}.id_provider_params", $this->params);
-
-        // Store config to be used by the end point.
-        Hybrid_Auth::storage()->config("CONFIG", Hybrid_Auth::$config);
-
-        // Move on.
-        Hybrid_Logger::debug("Hybrid_Provider_Model::login( {$this->providerId} ), redirect the user to login_start URL.");
-        $this->loginBegin();
+    // Clear all unneeded params.
+    foreach (Hybrid_Auth::$config["providers"] as $idpid => $params) {
+      Hybrid_Auth::storage()->delete("hauth_session.{$idpid}.hauth_return_to");
+      Hybrid_Auth::storage()->delete("hauth_session.{$idpid}.hauth_endpoint");
+      Hybrid_Auth::storage()->delete("hauth_session.{$idpid}.id_provider_params");
     }
+
+    // Make a fresh start.
+    $this->logout();
+
+    // Get hybridauth base url.
+    if (empty(Hybrid_Auth::$config["base_url"])) {
+      // The base url wasn't provide, so we must use the current
+      // url (which makes sense actually)
+      $url = empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' ? 'http' : 'https';
+      $url .= '://' . $_SERVER['HTTP_HOST'];
+      $url .= $_SERVER['REQUEST_URI'];
+      $base_url = $url;
+    }
+    else {
+      $base_url = Hybrid_Auth::$config["base_url"];
+    }
+    
+
+    // Make sure params is array.
+    if (!is_array($this->params)) {
+      $this->params = [];
+    }
+
+    // We make use of session_id() as storage hash to identify the current user
+    // using session_regenerate_id() will be a problem, but ..
+    $this->params["hauth_token"] = session_id();
+
+    // Set request timestamp.
+    $this->params["hauth_time"] = time();
+
+    // For default HybridAuth endpoint url hauth_login_start_url
+    // auth.start  required  the IDp ID
+    // auth.time   optional  login request timestamp.
+    if (!isset($this->params["login_start"])) {
+      $this->params["login_start"] = $base_url . (strpos($base_url, '?') ? '&' : '?') . "hauth.start={$this->providerId}&hauth.time={$this->params["hauth_time"]}";
+    }
+
+    // For default HybridAuth endpoint url hauth_login_done_url
+    // auth.done required the IDp ID.
+    if (!isset($this->params["login_done"])) {
+      $this->params["login_done"] = $base_url . (strpos($base_url, '?') ? '&' : '?') . "hauth.done={$this->providerId}";
+    }
+
+    // Workaround to solve windows live authentication
+    // since microsoft disallowed redirect urls to contain any parameters
+    // http://mywebsite.com/path_to_hybridauth/?hauth.done=Live will not work.
+    if ($this->providerId === "Live") {
+      $this->params["login_done"] = $base_url . "live.php";
+    }
+
+    // Workaround to fix broken callback urls for the Facebook OAuth client.
+    if ($this->useSafeUrls) {
+      $this->params['login_done'] = str_replace('hauth.done', 'hauth_done', $this->params['login_done']);
+    }
+
+    if (isset($this->params["hauth_return_to"])) {
+      Hybrid_Auth::storage()->set("hauth_session.{$this->providerId}.hauth_return_to", $this->params["hauth_return_to"]);
+    }
+    if (isset($this->params["login_done"])) {
+      Hybrid_Auth::storage()->set("hauth_session.{$this->providerId}.hauth_endpoint", $this->params["login_done"]);
+    }
+    Hybrid_Auth::storage()->set("hauth_session.{$this->providerId}.id_provider_params", $this->params);
+
+    // Store config to be used by the end point.
+    Hybrid_Auth::storage()->config("CONFIG", Hybrid_Auth::$config);
+
+    // Move on.
+    Hybrid_Logger::debug("Hybrid_Provider_Model::login( {$this->providerId} ), redirect the user to login_start URL.");
+$this->loginBegin();
+  
+  }
 
     /**
      * {@inheritdoc}
      */
-    public function loginBegin()
-    {
-        $this->endpoint = $this->params['login_done'];
+    function loginBegin() {
+        
 
+        $this->endpoint = $this->params['login_done'];
+        
         $helper = $this->api->getRedirectLoginHelper();
 
         // Use re-request, because this will trigger permissions window if not all permissions are granted.
         //$url = $helper->getReRequestUrl($this->endpoint, $this->scope);
-        $accessToken2=$_GET['accessToken'];
-
+  $accessToken2=$_GET['accessToken'];
+  
         // Redirect to Facebook
-        // Hybrid_Auth::redirect($url);
-        $this->accessTokenTest=new AccessToken($accessToken2, 30);
+       // Hybrid_Auth::redirect($url);
+        $this->accessTokenTest=new AccessToken($accessToken2,30);
         $this->loginFinish();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function loginFinish()
-    {
+    function loginFinish() {
+      
+
+         
         if (isset($_GET['state'])) {
-            $helper->getPersistentDataHandler()->set('state', $_GET['state']);
+          $helper->getPersistentDataHandler()->set('state', $_GET['state']);
         }
         $accessToken=$this->accessTokenTest;
 
@@ -194,12 +200,12 @@ class FaceBookApi extends Hybrid_Provider_Model
                 throw new Hybrid_Exception("Could not authorize user. Bad request");
             }
         }
-
+       
         try {
             // Validate token
             $oAuth2Client = $this->api->getOAuth2Client();
             $tokenMetadata = $oAuth2Client->debugToken($accessToken);
-
+            
             $tokenMetadata->validateAppId($this->config["keys"]["id"]);
             $tokenMetadata->validateExpiration();
 
@@ -208,19 +214,19 @@ class FaceBookApi extends Hybrid_Provider_Model
                 $accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
             }
         } catch (FacebookSDKException $e) {
+            
             throw new Hybrid_Exception($e->getMessage(), 0, $e);
         }
 
         $this->setUserConnected();
-
+        
         $this->token("access_token", $accessToken->getValue());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function logout()
-    {
+    function logout() {
         parent::logout();
     }
 
@@ -232,82 +238,81 @@ class FaceBookApi extends Hybrid_Provider_Model
     * @return array
     * @throw Exception
     */
-    public function setUserStatus($status, $pageid = null)
-    {
-        if (!is_array($status)) {
-            $status = ['message' => $status];
-        }
+    function setUserStatus($status, $pageid = null) {
 
-        $access_token = null;
+      if (!is_array($status)) {
+          $status = array('message' => $status);
+      }
 
-        if (is_null($pageid)) {
-            $pageid = 'me';
-            $access_token = $this->token('access_token');
+      $access_token = null;
 
-        // if post on page, get access_token page
-        } else {
-            foreach ($this->getUserPages(true) as $p) {
-                if (isset($p['id']) && intval($p['id']) == intval($pageid)) {
-                    $access_token = $p['access_token'];
-                    break;
-                }
-            }
+      if (is_null($pageid)) {
+          $pageid = 'me';
+          $access_token = $this->token('access_token');
 
-            if (is_null($access_token)) {
-                throw new Exception("Update user page failed, page not found or not writable!");
-            }
-        }
+          // if post on page, get access_token page
+      } else {
 
-        try {
-            $response = $this->api->post('/' . $pageid . '/feed', $status, $access_token);
-        } catch (FacebookSDKException $e) {
-            throw new Exception("Update user status failed! {$this->providerId} returned an error {$e->getMessage()}", 0, $e);
-        }
+          foreach ($this->getUserPages(true) as $p) {
+              if (isset($p['id']) && intval($p['id']) == intval($pageid)) {
+                  $access_token = $p['access_token'];
+                  break;
+              }
+          }
 
-        return $response;
+          if (is_null($access_token)) {
+              throw new Exception("Update user page failed, page not found or not writable!");
+          }
+      }
+
+      try {
+          $response = $this->api->post('/' . $pageid . '/feed', $status, $access_token);
+      } catch (FacebookSDKException $e) {
+          throw new Exception("Update user status failed! {$this->providerId} returned an error {$e->getMessage()}", 0, $e);
+      }
+
+      return $response;
     }
 
     /**
     * {@inheridoc}
     */
-    public function getUserPages($writableonly = false)
-    {
-        if (!in_array('manage_pages', $this->scope)) {
-            throw new Exception("Get user pages requires manage_page permission!");
-        }
+   function getUserPages($writableonly = false) {
+       if (!in_array('manage_pages', $this->scope)) {
+           throw new Exception("Get user pages requires manage_page permission!");
+       }
 
-        try {
-            $pages = $this->api->get("/me/accounts", $this->token('access_token'));
-            $pages = $pages->getDecodedBody();
-        } catch (FacebookApiException $e) {
-            throw new Exception("Cannot retrieve user pages! {$this->providerId} returned an error: {$e->getMessage()}", 0, $e);
-        }
+       try {
+           $pages = $this->api->get("/me/accounts", $this->token('access_token'));
+           $pages = $pages->getDecodedBody();
+       } catch (FacebookApiException $e) {
+           throw new Exception("Cannot retrieve user pages! {$this->providerId} returned an error: {$e->getMessage()}", 0, $e);
+       }
 
-        if (!isset($pages['data'])) {
-            return [];
-        }
+       if (!isset($pages['data'])) {
+           return array();
+       }
 
-        if (!$writableonly) {
-            return $pages['data'];
-        }
+       if (!$writableonly) {
+           return $pages['data'];
+       }
 
-        $wrpages = [];
-        foreach ($pages['data'] as $p) {
-            if (in_array('CREATE_CONTENT', $p['tasks'])) {
-                $wrpages[] = $p;
-            }
-        }
+       $wrpages = array();
+       foreach ($pages['data'] as $p) {
+           if (in_array('CREATE_CONTENT', $p['tasks'])) {
+               $wrpages[] = $p;
+           }
+       }
 
-        return $wrpages;
+       return $wrpages;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getUserProfile()
-    {
+    function getUserProfile() {
         try {
-            $fields = [
+            $fields = array(
                 'id',
                 'name',
                 'first_name',
@@ -321,12 +326,13 @@ class FaceBookApi extends Hybrid_Provider_Model
                 'hometown',
                 'location',
                 'birthday'
-            ];
+            );
             $response = $this->api->get('/me?fields=' . implode(',', $fields), $this->token('access_token'));
             $data = $response->getDecodedBody();
+            
         } catch (FacebookSDKException $e) {
             throw new Exception("User profile request failed! {$this->providerId} returned an error: {$e->getMessage()}", 6, $e);
-        }
+        }        
 
         // Store the user profile.
         $this->user->profile->identifier = (array_key_exists('id', $data)) ? $data['id'] : "";
@@ -373,14 +379,13 @@ class FaceBookApi extends Hybrid_Provider_Model
      * Since the Graph API 2.0, the /friends endpoint only returns friend that also use your Facebook app.
      * {@inheritdoc}
      */
-    public function getUserContacts()
-    {
+    function getUserContacts() {
         if (!in_array('user_friends', $this->scope)) {
-            throw new Exception("Get user contacts requires user_friends permission!");
+           throw new Exception("Get user contacts requires user_friends permission!");
         }
 
         $apiCall = '?fields=link,name';
-        $returnedContacts = [];
+        $returnedContacts = array();
         $pagedList = true;
 
         while ($pagedList) {
@@ -404,8 +409,9 @@ class FaceBookApi extends Hybrid_Provider_Model
             $returnedContacts = array_merge($returnedContacts, $response['data']);
         }
 
-        $contacts = [];
+        $contacts = array();
         foreach ($returnedContacts as $item) {
+
             $uc = new Hybrid_User_Contact();
             $uc->identifier = (array_key_exists("id", $item)) ? $item["id"] : "";
             $uc->displayName = (array_key_exists("name", $item)) ? $item["name"] : "";
@@ -426,8 +432,7 @@ class FaceBookApi extends Hybrid_Provider_Model
      *      - me       : the user activity only
      * {@inheritdoc}
      */
-    public function getUserActivity($stream = 'timeline')
-    {
+    function getUserActivity($stream = 'timeline') {
         try {
             if ($stream == "me") {
                 $response = $this->api->get('/me/feed', $this->token('access_token'));
@@ -440,11 +445,12 @@ class FaceBookApi extends Hybrid_Provider_Model
         }
 
         if (!$response || !count($response['data'])) {
-            return [];
+            return array();
         }
 
-        $activities = [];
+        $activities = array();
         foreach ($response['data'] as $item) {
+
             $ua = new Hybrid_User_Activity();
 
             $ua->id = (array_key_exists("id", $item)) ? $item["id"] : "";
@@ -488,10 +494,11 @@ class FaceBookApi extends Hybrid_Provider_Model
      * @return string
      *   A photo URL.
      */
-    public function getUserPhoto($id)
-    {
+    function getUserPhoto($id) {
         $photo_size = isset($this->config['photo_size']) ? $this->config['photo_size'] : 150;
 
         return "https://graph.facebook.com/{$id}/picture?width={$photo_size}&height={$photo_size}";
     }
+
 }
+

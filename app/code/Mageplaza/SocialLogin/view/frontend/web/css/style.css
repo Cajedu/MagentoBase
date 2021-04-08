@@ -715,6 +715,43 @@
     color: #3b5998;
     background-color: #fff
 }
+.btn-apple:focus, .btn-apple.focus {
+    color: #fff;
+    background-color: #141516;
+    border-color: rgba(0, 0, 0, 0.2)
+}
+
+.btn-apple:hover {
+    color: #fff;
+    background-color: #373a3d;
+    border-color: rgba(0, 0, 0, 0.2)
+}
+
+.btn-apple:active, .btn-apple.active, .open > .dropdown-toggle.btn-apple {
+    color: #fff;
+    background-color: #828587;
+    border-color: rgba(0, 0, 0, 0.2)
+}
+
+.btn-apple:active:hover, .btn-apple.active:hover, .open > .dropdown-toggle.btn-apple:hover, .btn-apple:active:focus, .btn-apple.active:focus, .open > .dropdown-toggle.btn-apple:focus, .btn-apple:active.focus, .btn-apple.active.focus, .open > .dropdown-toggle.btn-apple.focus {
+    color: #fff;
+    background-color: #828587;
+    border-color: rgba(0, 0, 0, 0.2)
+}
+
+.btn-apple:active, .btn-apple.active, .open > .dropdown-toggle.btn-apple {
+    background-image: none
+}
+
+.btn-apple.disabled:hover, .btn-apple[disabled]:hover, fieldset[disabled] .btn-apple:hover, .btn-apple.disabled:focus, .btn-apple[disabled]:focus, fieldset[disabled] .btn-apple:focus, .btn-apple.disabled.focus, .btn-apple[disabled].focus, fieldset[disabled] .btn-apple.focus {
+    background-color: #828587;
+    border-color: rgba(0, 0, 0, 0.2)
+}
+
+.btn-apple .badge {
+    color: #828587;
+    background-color: #fff
+}
 
 .btn-flickr {
     color: #fff;

@@ -21,16 +21,15 @@
 
 namespace Mageplaza\SocialLogin\CustomApi\Api;
 
-use Magento\Customer\Model\Customer;
-use Magento\Integration\Model\Oauth\TokenFactory as TokenModelFactory;
+use Psr\Log\LoggerInterface;
 use Mageplaza\SocialLogin\Helper\Social as SocialHelper;
 use Mageplaza\SocialLogin\Model\Social;
-use Psr\Log\LoggerInterface;
-
-class CustomFaceBook
+use Magento\Customer\Model\Customer;
+use Magento\Integration\Model\Oauth\TokenFactory as TokenModelFactory;
+class CustomFaceBook 
 {
     protected $logger;
-
+    
     /**
      * @type SocialHelper
      */
@@ -40,66 +39,72 @@ class CustomFaceBook
      * @type Social
      */
     protected $apiObject;
-
-    /**
-    * @var Customer
-    */
+    
+     /**
+     * @var Customer
+     */
     protected $customerModel;
-
-    /**
-    * Token Model
-    *
-    * @var TokenModelFactory
-    */
+    
+     /**
+     * Token Model
+     *
+     * @var TokenModelFactory
+     */
     private $tokenModelFactory;
-
+    
+ 
     public function __construct(
         LoggerInterface $logger,
         SocialHelper $apiHelper,
         Social $apiObject,
         Customer $customerModel,
-        TokenModelFactory $tokenModelFactory
-    ) {
+        TokenModelFactory $tokenModelFactory 
+    )
+    {
+ 
         $this->logger = $logger;
         $this->typeApi='facebook';
         $this->apiHelper= $apiHelper;
         $this->apiObject= $apiObject;
         $this->customerModel= $customerModel;
         $this->tokenModelFactory = $tokenModelFactory;
+       
     }
-
+ 
     /**
      * @inheritdoc
      */
-
+ 
     public function login($accessToken)
     {
         $response = ['success' => false];
-
+ 
         try {
             $this->apiHelper->setConfig('api');
             $type = $this->apiHelper->setType($this->typeApi);
             $userProfile = $this->apiObject->getUserProfile($type);
             if (!$userProfile->identifier) {
                 $response = ['success' => false, 'message' => 'Email is Null, Please enter email in your facebook profile'];
-            } else {
-                $customer     = $this->apiObject->getCustomerBySocial($userProfile->identifier, $type);
-                $customerData = $this->customerModel->load($customer->getId());
-                if (!$customer->getId()) {
-                    $customer = $this->createCustomerApiProcess($userProfile, $type);
-                }
-                $customerToken = $this->tokenModelFactory->create();
-                $tokenKey = $customerToken->createCustomerToken($customer->getId())->getToken();
-                $response = ['success' => true,'id' => $customer->getId(), 'email' => $userProfile->email,'type' => $type,'tokenKey' => $tokenKey];
+            }
+            else
+            {  
+        $customer     = $this->apiObject->getCustomerBySocial($userProfile->identifier, $type);
+         $customerData = $this->customerModel->load($customer->getId());
+        if (!$customer->getId()) {
+            $customer = $this->createCustomerApiProcess($userProfile, $type);
+        }
+        $customerToken = $this->tokenModelFactory->create();
+        $tokenKey = $customerToken->createCustomerToken($customer->getId())->getToken();
+            $response = ['success' => true,'id' => $customer->getId(), 'email' => $userProfile->email,'type' => $type,'tokenKey' => $tokenKey];
             }
         } catch (\Exception $e) {
             $response = ['success' => false, 'message' => $e->getMessage()];
             $this->logger->info($e->getMessage());
         }
         $returnResponse = json_encode($response);
-        return $returnResponse;
+        return $returnResponse; 
     }
-
+    
     /**
      * @param $userProfile
      * @param $type
@@ -146,7 +151,7 @@ class CustomFaceBook
             try {
                 $customer = $this->apiObject->createCustomerSocial($user, $this->getStore());
             } catch (Exception $e) {
-                throw new Exception($e->getMessage());
+                 throw new Exception($e->getMessage());
                 return false;
             }
         }
