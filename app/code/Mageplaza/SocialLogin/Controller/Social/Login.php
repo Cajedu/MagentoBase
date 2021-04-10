@@ -60,8 +60,6 @@ class Login extends AbstractSocial
 
             return;
         }
-        $userProfile = $this->apiObject->getUserProfile($type);
-        var_dump($userProfile);die();
         try {
             $userProfile = $this->apiObject->getUserProfile($type);
 
